@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mediflow AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --accent: #7c3aed;
+      --bg: #f0f4ff;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 4px 24px rgba(37,99,235,0.10);
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* Header */
+    .app-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .app-header .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.30);
+    }
+    .app-header .logo svg { width: 20px; height: 20px; }
+    .app-header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .app-header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* Progress Steps */
+    .progress-track {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      position: relative;
+    }
+    .progress-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 60%;
+      width: 80%;
+      height: 2px;
+      background: var(--border);
+      transition: background 0.4s;
+    }
+    .progress-step.done:not(:last-child)::after,
+    .progress-step.active:not(:last-child)::after {
+      background: var(--primary);
+    }
+    .step-bubble {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: var(--border);
+      color: var(--muted);
+      border: 2px solid var(--border);
+      transition: all 0.3s;
+      z-index: 1;
+    }
+    .progress-step.active .step-bubble {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+    .progress-step.done .step-bubble {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .step-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .progress-step.active .step-label { color: var(--primary); }
+    .progress-step.done .step-label { color: var(--success); }
+
+    /* Card */
+    .form-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      animation: slideIn 0.35s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-form { display: none; }
+    .step-form.active { display: block; }
+
+    /* Step headings */
+    .step-heading {
+      margin-bottom: 22px;
+    }
+    .step-heading h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .step-heading p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Input field */
+    .input-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 7px;
+      letter-spacing: 0.2px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      width: 18px;
+      height: 18px;
+    }
+    input[type="text"], input[type="email"], input[type="tel"] {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: #fafbff;
+      transition: 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    /* Symptom chips */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .chip {
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: #f8faff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .chip:hover, .chip.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Specialist badge */
+    .specialist-badge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    .specialist-badge.show { display: flex; }
+
+    /* Doctor cards */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 18px;
+      padding-right: 4px;
+    }
+    .card-list::-webkit-scrollbar { width: 5px; }
+    .card-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .doc-card {
+      background: #fafbff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .doc-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 12px rgba(37,99,235,0.10);
+      transform: translateY(-1px);
+    }
+    .doc-card.selected {
+      border-color: var(--success);
+      background: var(--success-light);
+    }
+    .doc-card.selected .check-ring { display: flex; }
+
+    .hospital-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--primary);
+    }
+    .hospital-icon svg { width: 22px; height: 22px; }
+    .doc-card.selected .hospital-icon {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-info h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .doc-info .sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .doc-fee {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .doc-card.selected .doc-fee { color: var(--success); }
+
+    .check-ring {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 20px;
+      height: 20px;
+      background: var(--success);
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-ring svg { width: 12px; height: 12px; color: #fff; }
+
+    /* Summary box */
+    .summary-box {
+      background: #f8faff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .key { color: var(--muted); font-weight: 500; }
+    .summary-row .val { font-weight: 700; color: var(--text); }
+    .summary-row.total .val { color: var(--primary); font-size: 1.05rem; }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn svg { width: 18px; height: 18px; }
+
+    /* Confirmation screen */
+    .confirm-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .confirm-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--success-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: var(--success);
+    }
+    .confirm-icon svg { width: 38px; height: 38px; }
+    .confirm-header h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .confirm-header p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
+
+    .op-badge {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      text-align: center;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .op-badge .label {
+      font-size: 0.78rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+    .op-badge .id {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+
+    /* Error */
+    .error-msg {
+      background: #fef2f2;
+      border: 1.5px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-msg.show { display: flex; }
+
+    /* Patient form */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 400px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- Header -->
+  <div class="app-header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M12 13v4m-2-2h4"/></svg>
+      MedBook
+    </div>
+    <h1>Mediflow AI</h1>
+    <p>Find specialists and book your outpatient visit instantly</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-track">
+    <div class="progress-step active" id="ps-1">
+      <div class="step-bubble">1</div>
+      <span class="step-label">Symptoms</span>
+    </div>
+    <div class="progress-step" id="ps-2">
+      <div class="step-bubble">2</div>
+      <span class="step-label">Doctor</span>
+    </div>
+    <div class="progress-step" id="ps-3">
+      <div class="step-bubble">3</div>
+      <span class="step-label">Confirm</span>
+    </div>
+    <div class="progress-step" id="ps-4">
+      <div class="step-bubble">✓</div>
+      <span class="step-label">Booked</span>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="form-card">
+
+    <!-- Step 1 -->
+    <form id="step-1" class="step-form active" onsubmit="searchSymptom(event)">
+      <div class="step-heading">
+        <h2>What are your symptoms?</h2>
+        <p>Enter your condition or pick a common symptom below</p>
+      </div>
+
+      <div class="chip-row" id="chip-row">
+        <span class="chip" onclick="setChip('fever')">🌡️ Fever</span>
+        <span class="chip" onclick="setChip('cough')">😮‍💨 Cough</span>
+        <span class="chip" onclick="setChip('headache')">🤕 Headache</span>
+        <span class="chip" onclick="setChip('diabetes')">💉 Diabetes</span>
+        <span class="chip" onclick="setChip('eye pain')">👁️ Eye Pain</span>
+        <span class="chip" onclick="setChip('back pain')">🦴 Back Pain</span>
+      </div>
+
+      <div class="input-group">
+        <label for="disease">Symptom or Condition</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="disease" placeholder="e.g. fever, cough, headache…" required autocomplete="off"/>
+        </div>
+      </div>
+
+      <div class="error-msg" id="err-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        No specialist found for this symptom. Try: fever, cough, headache, diabetes, eye pain, back pain.
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          Find Specialist
+        </button>
+      </div>
+    </form>
+
+    <!-- Step 2 -->
+    <div id="step-2" class="step-form">
+      <div class="step-heading">
+        <h2>Available Hospitals</h2>
+        <p id="step2-sub">Select a hospital to proceed</p>
+      </div>
+      <div class="specialist-badge" id="specialist-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+        <span id="specialist-text"></span>
+      </div>
+      <div class="card-list" id="doctors-list"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(0)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+          Back
+        </button>
+        <button class="btn btn-primary" id="to-step-3" disabled onclick="enterStep3()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step-3" class="step-form">
+      <div class="step-heading">
+        <h2>Confirm Booking</h2>
+        <p>Review your appointment details</p>
+      </div>
+      <div class="summary-box">
+        <div class="summary-row">
+          <span class="key">Hospital</span>
+          <span class="val" id="display-doctor">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="key">Specialist</span>
+          <span class="val" id="display-specialist">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="key">Appointment Type</span>
+          <span class="val">Outpatient (OP)</span>
+        </div>
+        <div class="summary-row total">
+          <span class="key">OP Fee</span>
+          <span class="val">₹<span id="display-amount">0</span></span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="input-group">
+          <label>Your Name</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <input type="text" id="pat-name" placeholder="Full name" required/>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Age</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <input type="text" id="pat-age" placeholder="Age" required/>
+          </div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Phone Number</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.12.96.36 1.9.71 2.81a2 2 0 01-.45 2.11l-1.27 1.27a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.35 1.85.59 2.81.71A2 2 0 0122 16.92z"/></svg>
+          <input type="tel" id="pat-phone" placeholder="+91 XXXXX XXXXX" required/>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+          Back
+        </button>
+        <button class="btn btn-primary" onclick="confirmBooking()">8
+          
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          Confirm Booking
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div id="step-4" class="step-form">
+      <div class="confirm-header">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h2>Booking Confirmed!</h2>
+        <p>Your appointment has been successfully scheduled</p>
+      </div>
+
+      <div class="op-badge">
+        <div class="label">Your OP ID</div>
+        <div class="id" id="op-id">—</div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row">
+          <span class="key">Patient</span>
+          <span class="val" id="final-name">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="key">Hospital</span>
+          <span class="val" id="final-doctor">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="key">Specialist</span>
+          <span class="val" id="final-specialist">—</span>
+        </div>
+        <div class="summary-row total">
+          <span class="key">Amount Paid</span>
+          <span class="val">₹<span id="final-amount">—</span></span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="resetApp()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          New Booking
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /form-card -->
+</div><!-- /app-wrapper -->
+
+<script>
+  const hospitalData = {
+    fever:      { specialist: "General Physician",   hospitals: [{ name: "City Hospital", details: "2 km · Open Now" }, { name: "Green Care Clinic", details: "3 km · Open Now" }, { name: "Health Plus Center", details: "5 km · Open Now" }] },
+    cough:      { specialist: "Pulmonologist",        hospitals: [{ name: "Lung Care Hospital", details: "3 km · Open Now" }, { name: "Respira Clinic", details: "6 km · Open Now" }, { name: "AirWell Medical", details: "4 km · Open Now" }] },
+    headache:   { specialist: "Neurologist",          hospitals: [{ name: "Neuro Centre", details: "2.5 km · Open Now" }, { name: "Brain Health Hospital", details: "5 km · Open Now" }] },
+    diabetes:   { specialist: "Endocrinologist",      hospitals: [{ name: "Diabetes Care Clinic", details: "3 km · Open Now" }, { name: "Metro Endocrine Centre", details: "7 km · Open Now" }] },
+    "eye pain": { specialist: "Ophthalmologist",      hospitals: [{ name: "Vision Eye Hospital", details: "2 km · Open Now" }, { name: "ClearSight Clinic", details: "4 km · Open Now" }] },
+    "back pain":{ specialist: "Orthopaedic Surgeon",  hospitals: [{ name: "Spine & Bone Centre", details: "3 km · Open Now" }, { name: "OrthoHealth Hospital", details: "6 km · Open Now" }] },
+  };
+
+  let selectedDoctor = "", selectedSpecialist = "", opAmount = 0;
+  const steps = [1, 2, 3, 4];
+
+  function goToStep(idx) {
+    steps.forEach(n => {
+      document.getElementById("step-" + n).classList.toggle("active", n - 1 === idx);
+    });
+    const pSteps = document.querySelectorAll(".progress-step");
+    pSteps.forEach((ps, i) => {
+      ps.classList.remove("active", "done");
+      if (i < idx) ps.classList.add("done");
+      if (i === idx) ps.classList.add("active");
+      // Update done bubble text
+      if (i < idx) ps.querySelector(".step-bubble").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg>`;
+      else ps.querySelector(".step-bubble").textContent = i + 1;
+    });
+  }
+
+  function setChip(val) {
+    document.getElementById("disease").value = val;
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    event.target.classList.add("active");
+  }
+
+  function searchSymptom(e) {
+    e.preventDefault();
+    const disease = document.getElementById("disease").value.toLowerCase().trim();
+    const errEl = document.getElementById("err-1");
+    errEl.classList.remove("show");
+
+    // Fuzzy match
+    let matchKey = null;
+    for (const key of Object.keys(hospitalData)) {
+      if (disease.includes(key) || key.includes(disease)) { matchKey = key; break; }
+    }
+
+    if (!matchKey) { errEl.classList.add("show"); return; }
+
+    const { specialist, hospitals } = hospitalData[matchKey];
+    selectedSpecialist = specialist;
+
+    document.getElementById("specialist-text").textContent = `Recommended Specialist: ${specialist}`;
+    document.getElementById("specialist-badge").classList.add("show");
+    document.getElementById("step2-sub").textContent = `${hospitals.length} hospitals found for ${disease}`;
+
+    const list = document.getElementById("doctors-list");
+    list.innerHTML = "";
+    selectedDoctor = "";
+    document.getElementById("to-step-3").disabled = true;
+
+    hospitals.forEach(h => {
+      const amount = Math.floor(Math.random() * 151) + 400;
+      const card = document.createElement("div");
+      card.className = "doc-card";
+      card.innerHTML = `
+        <div class="hospital-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="doc-info">
+          <h3>${h.name}</h3>
+          <div class="sub">${h.details} &nbsp;·&nbsp; OP Available</div>
+        </div>
+        <div class="doc-fee">₹${amount}</div>
+        <div class="check-ring">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+      `;
+      card.dataset.amount = amount;
+      card.dataset.name = h.name;
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".doc-card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedDoctor = h.name;
+        opAmount = amount;
+        document.getElementById("to-step-3").disabled = false;
+      });
+      list.appendChild(card);
+    });
+
+    goToStep(1);
+  }
+
+  function enterStep3() {
+    document.getElementById("display-doctor").textContent = selectedDoctor;
+    document.getElementById("display-specialist").textContent = selectedSpecialist;
+    document.getElementById("display-amount").textContent = opAmount;
+    goToStep(2);
+  }
+
+  function confirmBooking() {
+    const name = document.getElementById("pat-name").value.trim();
+    const age = document.getElementById("pat-age").value.trim();
+    const phone = document.getElementById("pat-phone").value.trim();
+    if (!name || !age || !phone) { alert("Please fill in all patient details."); return; }
+
+    const opId = "OP-" + Math.floor(Math.random() * 900000 + 100000);
+    document.getElementById("op-id").textContent = opId;
+    document.getElementById("final-name").textContent = name;
+    document.getElementById("final-doctor").textContent = selectedDoctor;
+    document.getElementById("final-specialist").textContent = selectedSpecialist;
+    document.getElementById("final-amount").textContent = opAmount;
+    goToStep(3);
+  }
+
+  function resetApp() {
+    document.getElementById("disease").value = "";
+    document.getElementById("pat-name").value = "";
+    document.getElementById("pat-age").value = "";
+    document.getElementById("pat-phone").value = "";
+    document.getElementById("err-1").classList.remove("show");
+    document.getElementById("specialist-badge").classList.remove("show");
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    selectedDoctor = ""; selectedSpecialist = ""; opAmount = 0;
+    goToStep(0);
+  }
+</script>
+</body>
+</html>
